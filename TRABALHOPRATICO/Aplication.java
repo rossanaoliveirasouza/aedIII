@@ -2,20 +2,54 @@ package TRABALHOPRATICO;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;
-import java.io.IOException; 
+import java.io.IOException;
+import java.util.Scanner; 
 public class Aplication{
     public static void main(String[] args){
+
+        Diretorio[] vetorDiretorioEmMemoriaPrincipal = null;
+        carregaDiretorioEmMemoriaPrincipal(vetorDiretorioEmMemoriaPrincipal);
+
+        int opcaoUsuario = exibirTelaPrincipal();
+        opcaoUsuario(opcaoUsuario);   
+    }
+
+    public static int exibirTelaPrincipal(){
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("*************************************************************\n" +
+                            "*************************************************************\n" +
+                            "Escolha uma das opções abaixo:\n" +
+                            "1. Criar Arquivo;\n" + 
+                            "2. Inserir Registro;\n" + 
+                            "3. Editar Registro;\n" + 
+                            "4. Remover Registro;\n" + 
+                            "5. Imprimir Arquivos;\n" + 
+                            "6. Simulação.\n" +
+                            "*************************************************************\n" +
+                            "*************************************************************\n");
+        int opcao = scanner.nextInt();
+        return opcao;
+    }
+    public static void opcaoUsuario(int opcaoUsuario){
+        if(opcaoUsuario == 1){ criarArquivo(); }
+        else if(opcaoUsuario == 2){ inserirRegistro(); }
+        else if(opcaoUsuario == 3){ editarRegistro(); }
+        else if(opcaoUsuario == 4){ removerRegistro(); }
+        else if(opcaoUsuario == 5){ imprimirArquivos(); }
+        else if(opcaoUsuario == 6){ simulacao(); }
+    }
+    //Método para carregar diretório em memória principal
+    public static void carregaDiretorioEmMemoriaPrincipal(Diretorio[] vetorDiretorioEmMemoriaPrincipal){
         FileInputStream arquivoDiretorio;
         DataInputStream leituradoArquivoDiretorio;
         int profundidadeDiretorio=0;
-        Diretorio[] vetorDiretorioEmMemoriaPrincipal;
         try {
             arquivoDiretorio = new FileInputStream("diretorio.db");
             leituradoArquivoDiretorio = new DataInputStream(arquivoDiretorio);
+
             profundidadeDiretorio = leituradoArquivoDiretorio.readInt();
             vetorDiretorioEmMemoriaPrincipal = new Diretorio[profundidadeDiretorio];
 
-            //carrega o arquivo diretorio em memória principal com o vetor vetorDiretorioEmMemoriaPrincipal
             for(int i=0; i<profundidadeDiretorio-1; i++){
                 vetorDiretorioEmMemoriaPrincipal[i].setDir(leituradoArquivoDiretorio.readInt());
             }
@@ -23,8 +57,22 @@ public class Aplication{
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
+
+    //Método para atualizar valores do arquivo diretório
+    public static void atualizaDiretorio(){}
+
+    public static void criarArquivo(){}
+
+    public static void inserirRegistro(){}
+
+    public static void editarRegistro(){}
+
+    public static void removerRegistro(){}
+
+    public static void imprimirArquivos(){}
+
+    public static void simulacao(){}
 }
 class Bucket{
     private int profundidade;
