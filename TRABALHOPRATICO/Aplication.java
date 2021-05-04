@@ -1,196 +1,199 @@
 package TRABALHOPRATICO;
 
-import java.io.DataInputStream;
-import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Scanner; 
+import java.io.ObjectOutputStream;
+ 
 public class Aplication{
+
+    public static int pGlobal;
+    public static int nEntradasBucket;
     public static void main(String[] args){
 
-        Diretorio[] vetorDiretorioEmMemoriaPrincipal = null;
-        carregaDiretorioEmMemoriaPrincipal(vetorDiretorioEmMemoriaPrincipal);
+        //System.out.print("--MENU DE OPÇÕES--\n1 - Criar arquivo\n2 - Inserir registro\n3 - Editar registro\n4 - Remover registro\n5 - Imprimir arquivos\n6 - Simulação\n\nOPÇÃO: ");
+        //int opção = in.nextInt();
 
-        int opcaoUsuario = exibirTelaPrincipal();
-        opcaoUsuario(opcaoUsuario);   
-    }
-
-    public static int exibirTelaPrincipal(){
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("*************************************************************\n" +
-                            "*************************************************************\n" +
-                            "Escolha uma das opções abaixo:\n" +
-                            "1. Criar Arquivo;\n" + 
-                            "2. Inserir Registro;\n" + 
-                            "3. Editar Registro;\n" + 
-                            "4. Remover Registro;\n" + 
-                            "5. Imprimir Arquivos;\n" + 
-                            "6. Simulação.\n" +
-                            "*************************************************************\n" +
-                            "*************************************************************\n");
-        int opcao = scanner.nextInt();
-        return opcao;
-    }
-    public static void opcaoUsuario(int opcaoUsuario){
-        if(opcaoUsuario == 1){ criarArquivo(); }
-        else if(opcaoUsuario == 2){ inserirRegistro(); }
-        else if(opcaoUsuario == 3){ editarRegistro(); }
-        else if(opcaoUsuario == 4){ removerRegistro(); }
-        else if(opcaoUsuario == 5){ imprimirArquivos(); }
-        else if(opcaoUsuario == 6){ simulacao(); }
-    }
-    //Método para carregar diretório em memória principal
-    public static void carregaDiretorioEmMemoriaPrincipal(Diretorio[] vetorDiretorioEmMemoriaPrincipal){
-        FileInputStream arquivoDiretorio;
-        DataInputStream leituradoArquivoDiretorio;
-        int profundidadeDiretorio=0;
+       
         try {
-            arquivoDiretorio = new FileInputStream("diretorio.db");
-            leituradoArquivoDiretorio = new DataInputStream(arquivoDiretorio);
+            ObjectOutputStream out = new ObjectOutputStream (new FileOutputStream("diretorio.dat"));
+            System.out.println("Profundidade inicial: ");
+            pGlobal = in.nextInt();
 
-            profundidadeDiretorio = leituradoArquivoDiretorio.readInt();
-            vetorDiretorioEmMemoriaPrincipal = new Diretorio[profundidadeDiretorio];
 
-            for(int i=0; i<profundidadeDiretorio-1; i++){
-                vetorDiretorioEmMemoriaPrincipal[i].setDir(leituradoArquivoDiretorio.readInt());
-            }
-            
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-    //Método para atualizar valores do arquivo diretório
-    public static void atualizaDiretorio(){}
-
-    public static void criarArquivo(){}
-
-    public static void inserirRegistro(){}
-
-    public static void editarRegistro(){}
-
-    public static void removerRegistro(){}
-
-    public static void imprimirArquivos(){}
-
-    public static void simulacao(){}
 }
-class Bucket{
-    private int profundidade;
+
+class Bucket implements Serializable{
+    private int pLocal;
+    private NoBucket[] no;
     private int n;
-    private NoBucket no;
 
-    Bucket(){}
+    public Bucket(){
+        profundidade = pGlobal;
+        n = nEntradasBucket;
+        no[] = new NoBucket[n];
+        for(int i=0; i<n; i++){
+            no[i] = new NoBucket();
+        }
+    }
+    public Bucket(int profundidade){
+        plocal = profundidade;
+        n = nEntradasBucket;
+        no[] = new NoBucket[n];
+        for(int i=0; i<n; i++){
+            no[i] = new NoBucket();
+        }
+    }
+    public Bucket(int profundidade, int nEnt){
+        plocal = profundidade;
+        n = nEnt;
+        no[] = new NoBucket[n];
+        for(int i=0; i<n; i++){
+            no[i] = new NoBucket();
+        }
+    }
 
-    public int getProfundidade() {
-        return profundidade;
+    public boolean isFull(){
+        for(int i=0; i<n; i++){
+            if(!no[i].isFull())
+                return false;
+        }
+        return true;
     }
-    public void setProfundidade(int profundidade) {
-        this.profundidade = profundidade;
+
+    public void addElement(long CPF, long num){
+        if(this.isFull()){
+            //chamar função de dividir bucket;
+            //chamar função addElement da classe Bucket recursivamente;
+        }else{
+            for(int i=0; i<n; i++){
+                if(!no[i].isFull()){
+                    no[i].setValue(CPF, num);
+                    i=n;
+                }
+            }
+        }
     }
-    public int getN() {
-        return n;
+
+    public Bucket divideBucket(){
+        if(pGlobal == pLocal){
+            //se profundidade for igual a do diretorio, atualizar o diretorio (aumentar ele e mudar a profundidade do mesmo)
+        }
+        pLocal += 1;
+        Bucket buck = new Bucket(pLocal, n); //cria bucket vazio com profundidade correta
+        this.reedestribuiCPF(buck);
+        return buck;
     }
-    public void setN(int n) {
-        this.n = n;
+
+    public void reedestribuiCPF(Bucket b1){
+
     }
-    public NoBucket getNo() {
-        return no;
+
+    public void removeElement(long CPF){ 
+        for(int i=0; i<n; i++){
+            if(CPF == no[i].getCPFValue()){
+                no[i].setValue(-1, -1);
+            }
+        }
     }
-    public void setNo(NoBucket no) {
-        this.no = no;
+
+
+}
+
+class Indice implements Serializable{
+    private Bucket[] bucks;
+
+}
+
+class NoBucket{ 
+    private long cpfKey;
+    private long numRegistroArqMestre;
+
+    public NoBucket(){
+        cpfKey = -1;
+        numRegistroArqMestre = -1;
+    }
+
+    public NoBucket(long CPF, long Num){
+        cpfKey = CPF;
+        numRegistroArqMestre = num;
+    }
+
+    public boolean isFull(){
+        return (cpfKey != -1);
+    }
+
+    public void setValue(long CPF, long Num){
+        cpfKey = CPF;
+        numRegistroArqMestre = Num;
+    }
+
+    public long getCPFValue(){
+        return cpfKey;
+    }
+
+    public long getNumRegistroValue(){
+        return numRegistroArqMestre;
     }
 }
-class NoBucket{
-    private long cpf;
-    private String endereco;
 
-    NoBucket(){}
-
-    public long getCpf() {
-        return cpf;
-    }
-    public void setCpf(long cpf) {
-        this.cpf = cpf;
-    }
-    public String getEndereco() {
-        return endereco;
-    }
-    public void setEndereco(String endereco) {
-        this.endereco = endereco;
-    }
-}
-class Prontuario{
+class Prontuario implements Serializable{
     private String nome;
     private Data dataNascimento;
     private String sexo;
     private String observacoes;
-
-    Prontuario(){}
-    
-    public String getNome() {
-        return nome;
-    }
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-    public Data getDataNascimento() {
-        return dataNascimento;
-    }
-    public void setDataNascimento(Data dataNascimento) {
-        this.dataNascimento = dataNascimento;
-    }
-    public String getSexo() {
-        return sexo;
-    }
-    public void setSexo(String sexo) {
-        this.sexo = sexo;
-    }
-    public String getObservacoes() {
-        return observacoes;
-    }
-    public void setObservacoes(String observacoes) {
-        this.observacoes = observacoes;
-    }
 }
+
+class NoDiretorio{
+    public int id;
+    public Bucket apontaBucket;
+    public NoDiretorio proxDirect;
+
+    public NoDiretorio(){
+        id = -1;
+        apontaBucket = null;
+        proxDirect = null;
+    }
+
+    public NoDiretorio(int i, Bucket buck){
+        id = i;
+        apontaBucket = buck;
+        proxDirect = null;
+    }
+
+}
+
+class Diretorio implements Serializable{
+    private int p; //profundidade
+    private noDiretorio diretorio;
+
+    public Diretorio(){
+        p = pGlobal;
+    }
+
+    public Diretorio(int prof){
+        p = prof;
+    }
+
+    public void setDiretorioProfundidade(int profundidade){
+        p = profundidade;
+    }
+
+    public int getDiretorioProfundidade(){
+        return p;
+    }
+
+    public int hashingKey(int keyCPF){
+        return (keyCPF % p);
+    }
+
+}
+
 class Data{
     int dia;
     int mes;
     int ano;
-
-    Data(){}
-
-    public int getDia() {
-        return dia;
-    }
-    public void setDia(int dia) {
-        this.dia = dia;
-    }
-    public int getMes() {
-        return mes;
-    }
-    public void setMes(int mes) {
-        this.mes = mes;
-    }
-    public int getAno() {
-        return ano;
-    }
-    public void setAno(int ano) {
-        this.ano = ano;
-    }
-}
-class Diretorio{
-    int dir;
-
-    Diretorio(){}
-
-    Diretorio(int n){
-        this.dir = n;
-    }
-
-    public int getDir() {
-        return dir;
-    }
-    public void setDir(int dir) {
-        this.dir = dir;
-    }
 }
