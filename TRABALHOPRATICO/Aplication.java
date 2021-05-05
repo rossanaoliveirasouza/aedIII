@@ -1,8 +1,7 @@
-package TRABALHOPRATICO;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
  
 public class Aplication{
 
@@ -17,7 +16,7 @@ public class Aplication{
         try {
             ObjectOutputStream out = new ObjectOutputStream (new FileOutputStream("diretorio.dat"));
             System.out.println("Profundidade inicial: ");
-            pGlobal = in.nextInt();
+            //pGlobal = in.nextInt();
 
 
         } catch (IOException e) {
@@ -31,31 +30,15 @@ class Bucket implements Serializable{
     private NoBucket[] no;
     private int n;
 
-    public Bucket(){
-        profundidade = pGlobal;
-        n = nEntradasBucket;
-        no[] = new NoBucket[n];
+    public Bucket(int pGlobal, int nEntradasBucket){
+        this.pLocal = pGlobal;
+        this.n = nEntradasBucket;
+        this.no = new NoBucket[n];
         for(int i=0; i<n; i++){
             no[i] = new NoBucket();
         }
     }
-    public Bucket(int profundidade){
-        plocal = profundidade;
-        n = nEntradasBucket;
-        no[] = new NoBucket[n];
-        for(int i=0; i<n; i++){
-            no[i] = new NoBucket();
-        }
-    }
-    public Bucket(int profundidade, int nEnt){
-        plocal = profundidade;
-        n = nEnt;
-        no[] = new NoBucket[n];
-        for(int i=0; i<n; i++){
-            no[i] = new NoBucket();
-        }
-    }
-
+    
     public boolean isFull(){
         for(int i=0; i<n; i++){
             if(!no[i].isFull())
@@ -78,12 +61,12 @@ class Bucket implements Serializable{
         }
     }
 
-    public Bucket divideBucket(){
+    public Bucket divideBucket(int pGlobal){
         if(pGlobal == pLocal){
             //se profundidade for igual a do diretorio, atualizar o diretorio (aumentar ele e mudar a profundidade do mesmo)
         }
-        pLocal += 1;
-        Bucket buck = new Bucket(pLocal, n); //cria bucket vazio com profundidade correta
+        this.pLocal += 1;
+        Bucket buck = new Bucket(pLocal, this.n); //cria bucket vazio com profundidade correta
         this.reedestribuiCPF(buck);
         return buck;
     }
@@ -119,7 +102,7 @@ class NoBucket{
 
     public NoBucket(long CPF, long Num){
         cpfKey = CPF;
-        numRegistroArqMestre = num;
+        numRegistroArqMestre = Num;
     }
 
     public boolean isFull(){
@@ -168,10 +151,10 @@ class NoDiretorio{
 
 class Diretorio implements Serializable{
     private int p; //profundidade
-    private noDiretorio diretorio;
+    private NoDiretorio diretorio;
 
     public Diretorio(){
-        p = pGlobal;
+        
     }
 
     public Diretorio(int prof){
