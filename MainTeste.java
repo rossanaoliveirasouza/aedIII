@@ -1,8 +1,7 @@
 import java.io.RandomAccessFile;
 import java.util.InputMismatchException;
+import java.util.Random;
 import java.util.Scanner;
-
-import javax.lang.model.element.Element;
 
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
@@ -26,25 +25,31 @@ public class MainTeste{
     }
 
     public static void menu() throws Exception{
-        int opcao = 1;
-        while (opcao > 0) {
+        String opcao = "1";
+        while (!opcao.equals("7")) {
+           
             System.out.println(
-                    "\n\n--MENU DE OPÇÕES--\n1 - Criar arquivo\n2 - Inserir registro\n3 - Editar registro\n4 - Remover registro\n5 - Imprimir arquivos\n6 - Simulação\n\nOPÇÃO: ");
-            opcao = ler.nextInt();
-            if (opcao == 1) {
+                        "\n\n--MENU DE OPÇÕES--\n1 - Criar arquivo\n2 - Inserir registro\n3 - Editar registro\n4 - Remover registro\n5 - Imprimir arquivos\n6 - Simulação\n7 - Sair do programa\n\nOPÇÃO: ");
+            opcao = ler.nextLine();
+            if (opcao.equals("1")) {
                 opcao1();
-            } else if (opcao == 2) {
+            } else if (opcao.equals("2")) {
                 opcao2();
-            } else if (opcao == 3) {
+            } else if (opcao.equals("3")) {
                 opcao3();
-            } else if (opcao == 4) {
+            } else if (opcao.equals("4")) {
                 opcao4();
-            } else if (opcao == 5) {
+            } else if (opcao.equals("5")) {
                 opcao5();
+            } else if (opcao.equals("6")) {
+                opcao6();
+            } else{
+                System.out.println("Esta é uma opção inválida!\nPor favor, escolha uma opção de 1 a 6.\nCaso deseje sair do programa, digite 7");
             }
+            opcao = ler.nextLine();
         }
     }
-    //Cria cada um dos 3 arquivos, arquivodiretorio, arquivomestre e arquivoindice e escreve os valores iniciais nos cabeçalhos de 
+    
     public static void opcao1() throws Exception {
         try{
             //DIRETORIO//
@@ -67,55 +72,11 @@ public class MainTeste{
             //não consegui tratar o erro aqui, tava dando loop infinito
         }
     }
-    //Insere um novo prontuário
+    
     public static void opcao2() throws Exception {
-        //TESTE DE ADCIONAR E REMOVER DO INDICE
-        /*System.out.println("primeiro add: ");
-        int op = ler.nextInt();
-        indice.addElemento(0, 999999999, 3);
-        System.out.println("segundo add: ");
-        op = ler.nextInt();
-        indice.addElemento(0, 4, 5);
-        System.out.println("terceiro add: ");
-        op = ler.nextInt();
-        indice.addElemento(1, 2, 6);
-        System.out.println("primeiro remove: ");
-        op = ler.nextInt();
-        indice.removeElementoBucket(0, 4);
-        System.out.println("segundo remove: ");
-        op = ler.nextInt();
-        indice.removeElementoBucket(1, 2);
-        System.out.println("quarto add: ");
-        op = ler.nextInt();
-        indice.addElemento(0, 4, 5);*/
-
         System.out.println("\n-- ACESSANDO OPÇÃO 2 --");
         Registro registro = recebeDadosInformados();
-        RandomAccessFile arquivoMestre = new RandomAccessFile("arquivomestre.db", "rw");
-        int endereco = prontuario.write(arquivoMestre, registro); //retorna endereco para inserir ele no bucket com o cpf
-        int key = diretorio.hashingKey(registro.getidRegistroCpf());
-        int pLocalBucket = indice.addElemento(key, registro.getidRegistroCpf(), endereco);
-        if(pLocalBucket != -1){ //se for verdade vai ter que dividir o bucket
-            if(pLocalBucket == diretorio.getpGlobal()){
-                ElementoBucket[] elementos = indice.divideBucket(key, diretorio.getpGlobal()+1);
-                diretorio.dobraDiretorio();
-                diretorio.mudaCorrespondente(key, indice.getQtdBucketsTotal()-1); //faz a posicao correspondente ao novo bucket guardar o endereco dele
-                diretorio.write();
-                indice.addElemento(key, registro.getidRegistroCpf(), endereco);
-                for(ElementoBucket element: elementos){
-                    key = diretorio.hashingKey(element.getCPF());
-                    indice.addElemento(key, element.getCPF(), element.getEndRegistro());
-                }
-
-            }else{
-                ElementoBucket[] elementos = indice.divideBucket(key, diretorio.getpGlobal());
-                indice.addElemento(key, registro.getidRegistroCpf(), endereco);
-                for(ElementoBucket element: elementos){
-                    key = diretorio.hashingKey(element.getCPF());
-                    indice.addElemento(key, element.getCPF(), element.getEndRegistro());
-                }
-            }
-        }
+        insere(registro);
     }
 
     public static void opcao3() throws Exception {
@@ -124,7 +85,7 @@ public class MainTeste{
         int cpf = ler.nextInt();
         int positionNoIndice = diretorio.getEnderecoCorrespondente(cpf);
         System.out.println("\n\npositionNoIndice = "+ positionNoIndice);
-        int positionNoArqMestre = indice.getEnderecoPorCPF(arquivoMestre, positionNoIndice, cpf); //procurar no arq de indice, na position passada (positionNoIndice) o elemento cujo cpf == ao cpf de entrada e retornar a position no arqMestre
+        int positionNoArqMestre = indice.getEnderecoPorCPF(positionNoIndice, cpf); //procurar no arq de indice, na position passada (positionNoIndice) o elemento cujo cpf == ao cpf de entrada e retornar a position no arqMestre
         System.out.println("\npositionNoArqMestre = "+ positionNoArqMestre);
         if(positionNoArqMestre != -1){ //se pegou a posicao certinho
             prontuario.readRegistro(arquivoMestre, positionNoArqMestre);
@@ -140,41 +101,85 @@ public class MainTeste{
     public static void opcao4() throws Exception {
         RandomAccessFile arquivoMestre = new RandomAccessFile("arquivomestre.db", "rw");
         System.out.println("\n-- ACESSANDO OPÇÃO 3 --\nDigite o cpf do registro que deseja remover: ");
-        int registro = ler.nextInt();
+        int cpf = ler.nextInt();
+        int positionNoIndice = diretorio.getEnderecoCorrespondente(cpf);
+        int positionNoArqMestre = indice.getEnderecoPorCPF(positionNoIndice, cpf);
         System.out.println("\n-- O Registro abaixo será definitivamente excluído: \n");
-        prontuario.readRegistro(arquivoMestre, registro);
+        prontuario.readRegistro(arquivoMestre, positionNoArqMestre);
         prontuario.imprimeProntuario();
         System.out.println("\n-- 1- Confirmar ação: \n-- 2- Voltar ao menu inicial");
         int confirmacao = ler.nextInt();
 
         if(confirmacao == 1){
-            prontuario.apagaRegistro(arquivoMestre, registro);
+            prontuario.apagaRegistro(arquivoMestre, positionNoArqMestre);
+            indice.removeElementoBucket(positionNoIndice, cpf);
             System.out.println("\nRegistro apagado com sucesso\n");
         }
         arquivoMestre.close();
     }
 
     public static void opcao5() throws Exception {
+        System.out.print("\n-- ACESSANDO OPÇÃO 5"); 
+        diretorio.read();
+        System.out.println(diretorio.toString());
+        indice.readArquivoCompleto();
         RandomAccessFile arquivoMestre = new RandomAccessFile("arquivomestre.db", "rw");
-        System.out.print("\n-- ACESSANDO OPÇÃO 5 --\nDeseja recuperar um registro expecífico, ou todos os registros do sistema? (1 - apenas um 2 - todos)\n");
-        int op = ler.nextInt();
-        if(op==1){
-            System.out.print("\nDigite o número do registro que deseja recuperar: ");
-            int registro = ler.nextInt();
-            prontuario.readRegistro(arquivoMestre, registro);
-            prontuario.imprimeProntuario();
-        }else if(op==2){
-            prontuario.readProntuario(arquivoMestre);
+        prontuario.readProntuario(arquivoMestre);
+        prontuario.imprimeProntuario();
+        arquivoMestre.close();
+    }
+
+    public static void opcao6() throws Exception{
+        System.out.print("\n-- ACESSANDO OPÇÃO 6 - SIMULAÇÃO"); 
+        opcao1();
+        System.out.println(
+                    "\n-- NUMERO DE CPF's --\nFavor inserir quantidade total de cpf's para esta simulação: ");
+        int n = ler.nextInt();
+        int[] vetKeys = new int[n];
+        geraCpfParaSimulacao(vetKeys, n);
+        pesquisaEImprimiCpfSimulacao(vetKeys, n);
+        
+
+    }
+
+    public static void geraCpfParaSimulacao(int[] vetKeys, int n) throws Exception{
+        
+        Random gerador = new Random();
+        gerador.setSeed(4);
+        double tempoInicio = System.currentTimeMillis();
+        for(int i=0; i<n; i++){
+            vetKeys[i] = (int)Math.abs(gerador.nextInt()% 999999999);
+            int positionNoIndice = diretorio.getEnderecoCorrespondente(vetKeys[i]);
+            int positionNoArqMestre = indice.getEnderecoPorCPF(positionNoIndice, vetKeys[i]);
+            if(positionNoArqMestre == -1){
+                Registro registro = new Registro(vetKeys[i], " ", 'f', " ", " ");
+                insere(registro);
+            }else{
+                i--;
+            }
+        }
+        double tempoFim = System.currentTimeMillis();
+        System.out.println("Tempo de inserção: " + (tempoFim - tempoInicio)/1000 + "s");
+    }
+
+    public static void pesquisaEImprimiCpfSimulacao(int[] vetKeys, int n) throws Exception{
+        double tempoInicio = System.currentTimeMillis();
+        RandomAccessFile arquivoMestre = new RandomAccessFile("arquivomestre.db", "rw");
+        for(int i=0; i<n; i++){
+            int positionNoIndice = diretorio.getEnderecoCorrespondente(vetKeys[i]);
+            int positionNoArqMestre = indice.getEnderecoPorCPF(positionNoIndice, vetKeys[i]);
+            prontuario.readRegistro(arquivoMestre, positionNoArqMestre);
             prontuario.imprimeProntuario();
         }
         arquivoMestre.close();
+        double tempoFim = System.currentTimeMillis();
+        System.out.println("Tempo de pesquisa e recuperação: " + (tempoFim - tempoInicio)/1000 + "s");
     }
 
     public static Registro recebeDadosInformados() throws IOException {
         int respostaCpf=0;
         System.out.println("Digite o nome: ");
         String respostaNome = ler.nextLine();
-        respostaNome = ler.nextLine();
 
         // trata nomes com mais carcateres que o permitido
         while (respostaNome.length() > 20) {
@@ -193,18 +198,8 @@ public class MainTeste{
             System.out.println("O valor informado não é um valor válido.\nPor gentileza, insira os valores conforme solicitado:");
             recebeDadosInformados();
         }
-        System.out.println("Anotações sobre o paciente: ");
-        String respostaObservacoes = ler.nextLine();
-        respostaObservacoes = ler.nextLine();
-        int tam = getTamAnotacoesNoArquivo(); // le do arquivo o tamanho proposto para as anotacoes do medico
-
-        // trata anotacoes com mais caracteres que o permitido
-        while (respostaObservacoes.length() > tam) {
-            System.out.print("Favor digitar anotação de, no maximo, " + tam + " caracteres: ");
-            respostaObservacoes = ler.nextLine();
-        }
         Registro registro = new Registro(respostaCpf, respostaNome, respostaSexo, respostaDataNascimento,
-                respostaObservacoes);
+                "sem observações");
         return registro;
     }
 
@@ -225,7 +220,6 @@ public class MainTeste{
         respostaDataNascimento = ler.nextLine();
         System.out.println("Anotações sobre o paciente: ");
         String respostaObservacoes = ler.nextLine();
-        respostaObservacoes = ler.nextLine();
         int tam = getTamAnotacoesNoArquivo(); // le do arquivo o tamanho proposto para as anotacoes do medico
 
         // trata anotacoes com mais caracteres que o permitido
@@ -253,6 +247,40 @@ public class MainTeste{
         }
     }
 
+    public static void insere(Registro registro)throws Exception{
+        RandomAccessFile arquivoMestre = new RandomAccessFile("arquivomestre.db", "rw");
+        int endereco = prontuario.write(arquivoMestre, registro); //retorna endereco para inserir ele no bucket com o cpf
+        int key = diretorio.getEnderecoCorrespondente(registro.getidRegistroCpf());
+        int pLocalBucket = indice.addElemento(key, registro.getidRegistroCpf(), endereco);
+        if(pLocalBucket != -1){ //se for verdade vai ter que dividir o bucket
+            if(pLocalBucket == diretorio.getpGlobal()){
+                ElementoBucket[] elementos = indice.divideBucket(key, diretorio.getpGlobal()+1);
+                diretorio.dobraDiretorio();
+                diretorio.mudaCorrespondente(key, indice.getQtdBucketsTotal()-1); //faz a posicao correspondente ao novo bucket guardar o endereco dele
+                key = diretorio.getEnderecoCorrespondente(registro.getidRegistroCpf(), pLocalBucket +1);
+                indice.addElemento(key, registro.getidRegistroCpf(), endereco);
+                for(ElementoBucket element: elementos){
+                    key = diretorio.getEnderecoCorrespondente(element.getCPF(), pLocalBucket +1);
+                    int continuaCheio = indice.addElemento(key, element.getCPF(), element.getEndRegistro());
+                    if(continuaCheio != -1){
+                        insere(registro);
+                    }
+                }
+            }else{
+                ElementoBucket[] elementos = indice.divideBucket(key, diretorio.getpGlobal());
+                diretorio.mudaCorrespondente2(key, indice.getQtdBucketsTotal()-1);
+                key = diretorio.getEnderecoCorrespondente(registro.getidRegistroCpf(), pLocalBucket +1);
+                indice.addElemento(key, registro.getidRegistroCpf(), endereco);
+                for(ElementoBucket element: elementos){
+                    key = diretorio.getEnderecoCorrespondente(element.getCPF(), pLocalBucket +1);
+                    int continuaCheio = indice.addElemento(key, element.getCPF(), element.getEndRegistro());
+                    if(continuaCheio != -1){
+                        insere(registro);
+                    }
+                }
+            }
+        }
+    }
 
 }
 
@@ -425,17 +453,6 @@ class Registro {
         this.dataNascimento = dis.readUTF();
         this.observacao = dis.readUTF();
     }
-
-    /*public void removeRegistro(RandomAccessFile file, int position) throws IOException {
-        try{
-            file.seek(12 + 2 +(position * (Main.TAM_TC + Main.TAM_OBSERVACAO))); // coloca na posição da lápide
-            int lapide = 1;
-            file.writeInt(lapide);
-        }catch(IOException e){
-
-        }
-    }*/
-
 }
 
 class Prontuario{
@@ -455,16 +472,13 @@ class Prontuario{
             file.seek(0);
             this.cabecalho.read();
             for(int i=0; i<this.cabecalho.getqtdRegistrosEscritos(); i++){
-                file.seek(12 + (i * (this.cabecalho.getTAM_TC() + this.cabecalho.getTAM_OBSERVACAO())));
-                this.registro[0].read(file, this.cabecalho.getTAM_TC(), this.cabecalho.getTAM_OBSERVACAO());
-                System.out.println(this.registro[0].toString());
+                readRegistro(file, i);
                 if(this.registro[0].isApagado()){
-                    return writeRegistro(file, i, registro);
+                    return writeRegistro(file, i, registro); 
                 }
             }
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente.");
-            System.out.println(error);
             MainTeste.menu();
         }
         this.cabecalho.updateCabecalho(this.cabecalho.getqtdRegistrosEscritos() + 1);
@@ -524,6 +538,7 @@ class Prontuario{
     }
 
     public void imprimeProntuario(){
+        System.out.println("\n*PRONTUARIOS*");
         for(int i=0; i<this.registro.length; i++){
             if(!this.registro[i].isApagado()){
                 System.out.println(this.registro[i].toString());
@@ -554,11 +569,12 @@ class Bucket{
     }
 
     public void intoString(int nEntradas){
-        System.out.println("BUCKET: pLocal = "+this.pLocal);
+        System.out.println("\nBUCKET: \nProfundidade local = " + this.pLocal);
         for(int i=0; i<nEntradas; i++){
-            System.out.println("\nelemento "+i+":");
+            System.out.print("\nElemento "+i+":");
             this.elemento[i].intoString();
         }
+        System.out.println("-----------------------------------");
     }
 
     public void write(RandomAccessFile file) throws Exception{
@@ -617,12 +633,6 @@ class Bucket{
     public ElementoBucket[] copiaElementos(){
         return this.elemento;
     }
-
-    /*public void setLapideTodosElementos(){
-        for(ElementoBucket element: this.elemento){
-            element.apagaElemento();
-        }
-    }*/
 
     public void read(RandomAccessFile file) throws Exception{
         try {
@@ -690,7 +700,7 @@ class ElementoBucket{
   }
 
   public void intoString(){
-      System.out.println("IdRegistroCpf = "+this.idRegistroCpf+"\nEndRegistro = "+ this.EndRegistro+"\nlapide = "+this.lapide);
+      System.out.println("CPF: "+this.idRegistroCpf+"\nEndereço do Registro: "+ this.EndRegistro+"\nLápide: "+this.lapide);
   }
 
   public void write(RandomAccessFile file)throws Exception{
@@ -717,7 +727,6 @@ class ElementoBucket{
 
   public boolean comparaCPF(int cpf){
       if(this.idRegistroCpf== cpf && !this.lapide){
-          System.out.println("ACHOU! CPF = "+ this.idRegistroCpf + " End = "+ this.EndRegistro);
           return true;
       }else{
           return false;
@@ -733,6 +742,7 @@ class ElementoBucket{
 }
 
 class Indice{
+    public static Scanner ler = new Scanner(System.in);
     private int qtdBucketsTotal;
     private int nElementosPorBucket;
     private Bucket bucket;
@@ -751,7 +761,6 @@ class Indice{
             arquivoIndice.seek(8);
             for(int i=0; i<(int)Math.pow(2, pGlobal); i++){
                 enderecos[i] = arquivoIndice.getFilePointer();
-                //System.out.println("End "+i+" = " + enderecos[i]);
                 this.bucket = new Bucket(pGlobal, this.nElementosPorBucket);
                 this.bucket.write(arquivoIndice);
             }
@@ -777,8 +786,34 @@ class Indice{
             this.qtdBucketsTotal = file.readInt();
             this.nElementosPorBucket = file.readInt();
         }catch(Exception error){
-
+            System.out.println("Ocorreu um erro inesperado. Tente novamente.");
+            MainTeste.menu();
         }
+    }
+
+    public void readArquivoCompleto() throws Exception{
+        RandomAccessFile arquivoIndice = new RandomAccessFile("arquivoindice.db", "rw");
+        try{
+            readCabecalho(arquivoIndice);
+            System.out.println("\nINDICE\nQuantidade total de buckets: " + this.qtdBucketsTotal +
+                                "\nQuantidade de elementos por buket: " + this.nElementosPorBucket+"\n");
+            for(int i=0; i<this.qtdBucketsTotal; i++){
+                this.bucket.read(arquivoIndice);
+                this.bucket.intoString(this.nElementosPorBucket);
+            }
+            System.out.println("*************");
+            
+        }catch(Exception e){
+            System.out.println("Ocorreu um erro inesperado. Tente novamente.");
+            MainTeste.menu();
+        } finally{
+            arquivoIndice.close();
+        }
+    }
+
+    public String toString(){
+
+        return null;
     }
 
     public void updateCabecalho(RandomAccessFile file, int qtdBuckets) throws Exception{
@@ -788,6 +823,8 @@ class Indice{
             file.writeInt(this.qtdBucketsTotal);
             file.writeInt(this.nElementosPorBucket);
         }catch(Exception error){
+            System.out.println("Ocorreu um erro inesperado. Tente novamente.");
+            MainTeste.menu();
         }
     }
 
@@ -795,15 +832,15 @@ class Indice{
         return new Bucket(profundidade, this.nElementosPorBucket);
     }
 
-    public int addElemento(int position, int cpf, int end) throws Exception{ //recebe em qual bucket (posicao dele no arquivoindice) ficara o cpf
+    public int addElemento(int position, int cpf, int end) throws Exception { //recebe em qual bucket (posicao dele no arquivoindice) ficara o cpf
         RandomAccessFile arquivoIndice = new RandomAccessFile("arquivoindice.db", "rw");
         try {
-            arquivoIndice.seek(8 + (position * (this.nElementosPorBucket * 10)));
+            arquivoIndice.seek(8 + (position * (4 + (this.nElementosPorBucket * 9))));
             this.bucket.read(arquivoIndice);
             if(!this.bucket.isFull()){
                 if(this.bucket.adcionaElemento(cpf, end)){
                     System.out.println("\nElemento adcionado com sucesso");//adciona elemento e escreve o bucket
-                    arquivoIndice.seek(8 + (position * (this.nElementosPorBucket * 10)));
+                    arquivoIndice.seek(8 + (position * (4 + (this.nElementosPorBucket * 9))));
                     this.bucket.write(arquivoIndice);
                 }
                 else System.out.println("\nErro ao adcionar elemento");
@@ -821,16 +858,15 @@ class Indice{
     public ElementoBucket[] divideBucket(int position, int pGlobal)throws Exception{ //tem que retornar a position do novo bucket
         RandomAccessFile arquivoIndice = new RandomAccessFile("arquivoindice.db", "rw");
         try{
-            arquivoIndice.seek(8 + (position * (this.nElementosPorBucket * 10)));
+            arquivoIndice.seek(8 + (position * (4 + (this.nElementosPorBucket * 9))));
             this.bucket.read(arquivoIndice);
             ElementoBucket[] elementos = new ElementoBucket[this.nElementosPorBucket];
             elementos = this.bucket.copiaElementos();
-            //this.bucket.setLapideTodosElementos();
             this.bucket = new Bucket(this.bucket.getPLocal()+1, this.nElementosPorBucket);
-            arquivoIndice.seek(8 + (position * (this.nElementosPorBucket * 10)));
+            arquivoIndice.seek(8 + (position * (4 + (this.nElementosPorBucket * 9))));
             this.bucket.write(arquivoIndice);
             readCabecalho(arquivoIndice);
-            arquivoIndice.seek(8 + (this.qtdBucketsTotal * (this.nElementosPorBucket * 10)));
+            arquivoIndice.seek(8 + (this.qtdBucketsTotal * (4 + (this.nElementosPorBucket * 9))));
             this.bucket.write(arquivoIndice);
             updateCabecalho(arquivoIndice, this.qtdBucketsTotal+1);
             return elementos;
@@ -842,41 +878,17 @@ class Indice{
             arquivoIndice.close();
         }
         return null;
-        /*RandomAccessFile arquivoIndice = new RandomAccessFile("arquivoindice.db", "rw");
-        try{
-            arquivoIndice.seek(8 + (position * (this.nElementosPorBucket * 10)));
-            this.bucket.read(arquivoIndice);
-            //Bucket bucket2 = new Bucket(this.bucket.getPLocal() + 1, this.nElementosPorBucket);
-            this.bucket.setPLocal(this.bucket.getPLocal()+1);
-
-            Bucket bucketAux = new Bucket(this.bucket.getPLocal()+1, this.nElementosPorBucket);
-            bucketAux.realocaElementosBucket(pGlobal, bucket);
-            //this.bucket = bucketAux;
-            writeBucket(position);
-            bucketAux.realocaElementosBucket(pGlobal, bucket);
-            this.bucket = bucketAux;
-            this.qtdBucketsTotal++;
-            writeBucket(this.qtdBucketsTotal);
-            updateCabecalho(arquivoIndice, this.qtdBucketsTotal);
-        }catch(Exception error){
-            System.out.println("Ocorreu um erro inesperado. Tente novamente.");
-            MainTeste.menu();
-        }
-        finally{
-            arquivoIndice.close();
-        }*/
-        //return qtdBucketsTotal;
     }
 
     public int removeElementoBucket(int position, int cpf) throws Exception{
         int end= -1;
         RandomAccessFile arquivoIndice = new RandomAccessFile("arquivoindice.db", "rw");
         try {
-            arquivoIndice.seek(8 + (position * (this.nElementosPorBucket * 10))); //fica no comeco do bucket
+            arquivoIndice.seek(8 + (position * (4 + (this.nElementosPorBucket * 9)))); //fica no comeco do bucket
             this.bucket.read(arquivoIndice);
             end = this.bucket.apagaElemento(arquivoIndice, cpf);
             if(end != -1){
-                arquivoIndice.seek(8 + (position * (this.nElementosPorBucket * 10))); //fica no comeco do bucket
+                arquivoIndice.seek(8 + (position * (4 + (this.nElementosPorBucket * 9)))); //fica no comeco do bucket
                 this.bucket.write(arquivoIndice);
             }
         } catch (Exception error) {
@@ -888,12 +900,13 @@ class Indice{
         return end;
     }
 
-    public int getEnderecoPorCPF(RandomAccessFile file, int position, int cpf)throws Exception{
+    public int getEnderecoPorCPF(int position, int cpf)throws Exception{
         try {
-            file.seek(8 + (position * (this.nElementosPorBucket * 10))); //fica no comeco do bucket
+            RandomAccessFile file = new RandomAccessFile("arquivoindice.db", "rw");
+            file.seek(8 + (position * (4 + (this.nElementosPorBucket * 9)))); //fica no comeco do bucket
             this.bucket.read(file);
-            this.bucket.intoString(this.nElementosPorBucket);
             int end = this.bucket.comparaElemento(file, cpf); //se retornar -1 é que não achou o cpf em nenhum elemento do bucket
+            file.close();
             return end;
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente.");
@@ -905,7 +918,7 @@ class Indice{
     public void writeBucket(int position) throws Exception {
         RandomAccessFile arquivoIndice = new RandomAccessFile("arquivoindice.db", "rw");
         try {
-            arquivoIndice.seek(8 + (position * ((this.nElementosPorBucket * 10)))); // 4 +  and   9->10
+            arquivoIndice.seek(8 + (position * (4 + (this.nElementosPorBucket * 9))));
             this.bucket.write(arquivoIndice);   
             arquivoIndice.close();                                         
         } catch (Exception error) {
@@ -930,6 +943,15 @@ class Diretorio{
         for(int i=0; i<elemento.length; i++){
             this.elemento[i] = i;
         }
+    }
+
+    public String toString(){
+        String diretorio = "\n*DIRETORIO* \nProfundidade: " + this.pGlobal + "\nElementos: ";
+        for(int element: elemento){ 
+            diretorio += "\n[" + element + "]";
+        }
+        diretorio += "\n*************";
+        return diretorio;
     }
 
     public int getpGlobal(){
@@ -989,8 +1011,37 @@ class Diretorio{
         this.pGlobal = this.pGlobal + 1;
     }
 
+    public void mudaCorrespondente2(int key, int novoEndereco){
+        boolean altera = false;
+        for(int i=0; i<this.TAM_DIR; i++){
+            if(this.elemento[i] == key){
+                if(altera){
+                    this.elemento[i] = novoEndereco;
+                    altera = false;
+                }else{
+                    altera = true;
+                }
+            }
+        }
+        try{
+            write();
+        }catch(Exception e){
+
+        }
+    }
+
     public void mudaCorrespondente(int key, int novoEndereco){
         this.elemento[this.TAM_DIR/2 + key] = novoEndereco;
+        try{
+            write();
+        }catch(Exception e){
+
+        }
+    }
+
+    public int getEnderecoCorrespondente(int cpf, int pLocal){
+        int key = cpf%(int)Math.pow(2, pLocal);
+        return elemento[key];
     }
 
     public int getEnderecoCorrespondente(int cpf){
