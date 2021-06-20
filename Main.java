@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class tt{
+public class Main{
 
     public static Scanner ler = new Scanner(System.in);
     //Objetos das classes que serão utilizados no programa principal
@@ -342,7 +342,7 @@ class Cabecalho{
             write();
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. construtor cabeçalho");
-            tt.menu();
+            Main.menu();
         }
     }
 
@@ -352,7 +352,7 @@ class Cabecalho{
             write();
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. updatecabeçalho");
-            tt.menu();
+            Main.menu();
         }
     }
 
@@ -382,7 +382,7 @@ class Cabecalho{
             arquivoMestre.writeInt(this.qtdRegistrosEscritos);
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. write cabeçalho");
-            tt.menu();
+            Main.menu();
         } finally{
             arquivoMestre.close();
         }
@@ -397,7 +397,7 @@ class Cabecalho{
             this.qtdRegistrosEscritos = arquivoMestre.readInt();
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. read cabeçalho");
-            tt.menu();
+            Main.menu();
         }finally{
             arquivoMestre.close();
         }
@@ -489,7 +489,7 @@ class Registro {
             fromByteArray(array);
         } catch (IOException error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. read registro");
-            tt.menu();
+            Main.menu();
         }
     }
 
@@ -539,7 +539,7 @@ class Prontuario{
             }
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado write registro");
-            tt.menu();
+            Main.menu();
         }
         //se nenhum resgitro estiver apagado, esreve o registro no final do arquivo e atualiza o cabeçalho
         this.cabecalho.updateCabecalho(this.cabecalho.getqtdRegistrosEscritos() + 1);
@@ -553,7 +553,7 @@ class Prontuario{
             registro.write(file);
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. write registro");
-            tt.menu();
+            Main.menu();
         }
         return position;
     }
@@ -566,7 +566,7 @@ class Prontuario{
             this.registro.read(file, this.cabecalho.getTAM_TC(),this.cabecalho.getTAM_OBSERVACAO());
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. readregistro");
-            tt.menu();
+            Main.menu();
         }
     }
 
@@ -584,7 +584,7 @@ class Prontuario{
             this.posicoesDosApagados.add(position);
         }catch(Exception e){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. apaga registro");
-            tt.menu();
+            Main.menu();
         }
     }
 
@@ -599,7 +599,7 @@ class Prontuario{
             }
         }catch(Exception e){
             System.out.println("Ocorreu um erro inesperado. Tente novamente.");
-            tt.menu();
+            Main.menu();
         }
     }
 
@@ -612,7 +612,7 @@ class Prontuario{
             }
         }catch(Exception e){
             System.out.println("Ocorreu um erro inesperado. Tente novamente.");
-            tt.menu();
+            Main.menu();
         }
     }
 
@@ -665,7 +665,7 @@ class Bucket{
             }
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. write bucket");
-            tt.menu();
+            Main.menu();
         }
     }
 
@@ -694,7 +694,7 @@ class Bucket{
             }
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. apagaElemento bucket");
-            tt.menu();
+            Main.menu();
         }
         return -1; //caso não tenha encontrado o cpf
     }
@@ -710,7 +710,7 @@ class Bucket{
             }
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. comparaElemento bucket");
-            tt.menu();
+            Main.menu();
         }
         return -1; //caso não tenha encontrado o cpf
     }
@@ -730,7 +730,7 @@ class Bucket{
         }
         catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. copiaElementos bucket");
-            tt.menu();
+            Main.menu();
         }
     }
 
@@ -794,7 +794,7 @@ class ElementoBucket{
           file.writeInt(this.EndRegistro);
       }catch(Exception error){
         System.out.println("Ocorreu um erro inesperado. Tente novamente.");
-        tt.menu();
+        Main.menu();
       }
   }
 
@@ -806,7 +806,7 @@ class ElementoBucket{
             this.EndRegistro = file.readInt();
       }catch(Exception error){
         System.out.println("Ocorreu um erro inesperado. Tente novamente.");
-        tt.menu();
+        Main.menu();
       }
   }
 
@@ -851,7 +851,7 @@ class Indice{
             }
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. writeIndice");
-            tt.menu();
+            Main.menu();
         } finally{
             arquivoIndice.close();
         }
@@ -873,7 +873,7 @@ class Indice{
             this.nElementosPorBucket = file.readInt();
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. readCabecalho");
-            tt.menu();
+            Main.menu();
         }
     }
 
@@ -892,7 +892,7 @@ class Indice{
             
         }catch(Exception e){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. imprimeIndiceCompleto");
-            tt.menu();
+            Main.menu();
         } finally{
             arquivoIndice.close();
         }
@@ -907,7 +907,7 @@ class Indice{
             file.writeInt(this.nElementosPorBucket);
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. updateCabecalho");
-            tt.menu();
+            Main.menu();
         }
     }
 
@@ -928,7 +928,7 @@ class Indice{
             }
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. addElemento");
-            tt.menu();
+            Main.menu();
         } finally{
             arquivoIndice.close();
         }
@@ -953,7 +953,7 @@ class Indice{
             return elementos;
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. divideBucket");
-            tt.menu();
+            Main.menu();
         }
         finally{
             arquivoIndice.close();
@@ -975,7 +975,7 @@ class Indice{
             }
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. removeElementoBucket");
-            tt.menu();
+            Main.menu();
         } finally{
             arquivoIndice.close();
         }
@@ -993,7 +993,7 @@ class Indice{
             return end;
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. getEnderecoPorCPF");
-            tt.menu();
+            Main.menu();
         }
         return -1; //não achou o cpf
     }
@@ -1007,7 +1007,7 @@ class Indice{
             arquivoIndice.close();                                         
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. writeBucket");
-            tt.menu();
+            Main.menu();
         } finally{
             arquivoIndice.close();
         }
@@ -1067,7 +1067,7 @@ class Diretorio{
             arquivoDiretorio.close();
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Por favor, tente novamente. write diretorio");
-            tt.menu();
+            Main.menu();
         } finally{
             arquivoDiretorio.close();
         }
@@ -1083,7 +1083,7 @@ class Diretorio{
             }
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Por favor, tente novamente. read diretorio");
-            tt.menu();
+            Main.menu();
         } finally{
             arquivoDiretorio.close();
         }
