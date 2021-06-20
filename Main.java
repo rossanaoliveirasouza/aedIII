@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+/*Trabalho apresentado à disciplina de Algoritmos de Estruturas de Dados III
+pelos alunos do 3º período do Curso de Ciência da Computação da PUC Minas.
+    Alunas: Rossana Souza e Julia Gontijo*/
+
 public class Main{
 
     public static Scanner ler = new Scanner(System.in);
