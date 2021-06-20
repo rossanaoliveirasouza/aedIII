@@ -1,3 +1,14 @@
+/* 
+********************
+PROGRAMA - TRABALHO PRÁTICO 
+Disciplina: Algoritmo e Estrutura de Dados III - PUC Minas
+Professor: Zenilton Patrocínio Jr.
+Autoras:
+    Julia Gontijo Lopes   - matrícula: 701327
+    Rossana Oliveira de Souza  - matrícula: 705085
+********************
+*/
+
 import java.io.RandomAccessFile;
 import java.util.InputMismatchException;
 import java.util.Random;
@@ -12,11 +23,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-/*Trabalho apresentado à disciplina de Algoritmos de Estruturas de Dados III
-pelos alunos do 3º período do Curso de Ciência da Computação da PUC Minas.
-    Alunas: Rossana Souza e Julia Gontijo*/
-
-public class Main{
+public class tt{
 
     public static Scanner ler = new Scanner(System.in);
     //Objetos das classes que serão utilizados no programa principal
@@ -27,7 +34,7 @@ public class Main{
     public static void main(String[] args) throws Exception{
        menu();
     }
-    
+
     public static int menu() throws Exception{
         String opcao = "1"; //usando opção em string para evitar erros de receber o numero errado
         while (!opcao.equals("7")) {
@@ -78,7 +85,6 @@ public class Main{
             prontuario = new Prontuario(ler.nextInt()); //inicializa o diretório
             //OBS: ja escreve o cabecalho do arquivo no seu proprio construtor
         }catch(Exception e){
-            //não consegui tratar o erro aqui, tava dando loop infinito
         }
     }
     
@@ -96,13 +102,13 @@ public class Main{
         System.out.println("\n-- ACESSANDO OPÇÃO 3 --\nDigite o cpf do registro que deseja atualizar: ");
         int cpf = ler.nextInt();
         int positionNoIndice = diretorio.getEnderecoCorrespondente(cpf); //retorna a position no índice em que está o cpf
-        int positionNoArqMestre = indice.getEnderecoPorCPF(positionNoIndice, cpf); //procurar no arq de indice, na position passada (positionNoIndice) o elemento cujo cpf == ao cpf de entrada e retornar a position no arqMestre
+        int positionNoArqMestre = indice.getEnderecoPorCPF(positionNoIndice, cpf); //procura no arq de indice, no bucket escrito na position passada (positionNoIndice), o elemento cujo cpf == ao cpf de entrada e retorna a position no arqMestre
         if(positionNoArqMestre != -1){ //se pegou a posicao certinho
             System.out.println("\nConfira os dados atuais do registro informado: ");
             prontuario.imprimeRegistro(arquivoMestre, positionNoArqMestre);
             System.out.println("\nInforme os novos dados: ");
             Registro registro = recebeDadosInformadosSemCPF(cpf); //cria registro com novos dados
-            prontuario.writeRegistro(arquivoMestre, positionNoArqMestre, registro); //atualiza no arquivo
+            prontuario.writeRegistro(arquivoMestre, positionNoArqMestre, registro); //atualiza/reescreve no arquivo
         }else System.out.println("Registro não encontrado");
         arquivoMestre.close();
     }
@@ -113,7 +119,7 @@ public class Main{
         System.out.println("\n-- ACESSANDO OPÇÃO 3 --\nDigite o cpf do registro que deseja remover: ");
         int cpf = ler.nextInt();
         int positionNoIndice = diretorio.getEnderecoCorrespondente(cpf); //retorna a position no índice em que está o cpf
-        int positionNoArqMestre = indice.getEnderecoPorCPF(positionNoIndice, cpf); //procurar no arq de indice, na position passada (positionNoIndice) o elemento cujo cpf == ao cpf de entrada e retornar a position no arqMestre
+        int positionNoArqMestre = indice.getEnderecoPorCPF(positionNoIndice, cpf); //procura no arq de indice, no bucket escrito na position passada (positionNoIndice), o elemento cujo cpf == ao cpf de entrada e retorna a position no arqMestre
         System.out.println("\n-- O Registro abaixo será definitivamente excluído: \n");
         prontuario.imprimeRegistro(arquivoMestre, positionNoArqMestre);
         System.out.println("\n-- 1- Confirmar ação: \n-- 2- Voltar ao menu inicial");
@@ -145,43 +151,53 @@ public class Main{
         System.out.println(
                     "\n-- NUMERO DE CPF's --\nFavor inserir quantidade total de cpf's para esta simulação: ");
         int n = ler.nextInt();
-        int[] vetKeys = new int[n];
+        List<Integer> vetKeys = new ArrayList<Integer>(n);
         double tempoInsercao = geraCpfParaSimulacao(vetKeys, n);
         pesquisaEImprimiCpfSimulacao(vetKeys, n, tempoInsercao);
-        
-
     }
 
-    public static double geraCpfParaSimulacao(int[] vetKeys, int n) throws Exception{
-        
+    public static double geraCpfParaSimulacao(List<Integer> vetKeys, int n) throws Exception{
+        //utiliza random para gerar numeros aleatórios
         Random gerador = new Random();
         gerador.setSeed(4);
-        double tempoInicio = System.currentTimeMillis();
-        int a=0;
+        double tempoInicio = System.currentTimeMillis(); //para calcular tempo de execução
+        int tamTotalRegistro = prontuario.getTAM_TC() + prontuario.getTAM_OBSERVACAO();
+        byte[] vetorFinal = new byte[tamTotalRegistro*n]; //vetor de bytes usado para concatenar todos os registros a sereem excritos
         for(int i=0; i<n; i++){
-            vetKeys[i] = (int)Math.abs(gerador.nextInt()% 999999999); //gera números aleatórios de 0 até 999999999 (máximo de Int)
-
-            //verifica a existência do cpf no arquivo
-            int positionNoIndice = diretorio.getEnderecoCorrespondente(vetKeys[i]);
-            int positionNoArqMestre = indice.getEnderecoPorCPF(positionNoIndice, vetKeys[i]);
-            if(positionNoArqMestre == -1){ //se não já existir este cpf no arquivo, adciona
-                Registro registro = new Registro(vetKeys[i], " ", 'f', " ", " "); //valores default
-                insere(registro);
-                System.out.println("valor de i: " + i + "\nvalor de a: " + a++);
+            int cpf = (int)Math.abs(gerador.nextInt()% 999999999); //gera cpf aleatório de 0 até 999999999
+            //verifica a repeticao de cpf
+            if(!vetKeys.contains(cpf)){
+                vetKeys.add(cpf);
+                Registro registro = new Registro(vetKeys.get(i), " ", 'f', " ", " "); //valores default
+                byte[] vetorBytes = registro.toByteArray(); //transforma o registro em vetor de bytes
+                byte[] bytesFaltantes = new byte[tamTotalRegistro]; //vetor com a quantidade de bytes de um registro (tam_tc + tam_observacao)
+                System.arraycopy(vetorBytes, 0, bytesFaltantes, 0, vetorBytes.length); //copia o vetor de bytes do registro no inicio do vetor coma quantidaded necessaria (para pular no arquivo o tamanho certo ate escrever o proximo registro e ler corretamente)
+                System.arraycopy(vetorBytes, 0, vetorFinal, i*tamTotalRegistro, vetorBytes.length); //concatena todos os vetores de registros no vetorFinal
+                insereHashing(i, registro);//insere o endereço no indice (sequencial (manda 'i') pois escreve no arquivo mestre sequencialmente)
             }else{
                 i--; //diminui 1 unidade para adcionar o número certo de cpfs
             }
         }
+        RandomAccessFile arquivoMestre = new RandomAccessFile("arquivomestre.db", "rw");
+        System.out.println("Abriu o arquivo");
+
+        try{
+            arquivoMestre.seek(12); //pula cabecalho
+            arquivoMestre.write(vetorFinal); //escreve todos os registros de uma vez
+            System.out.println("write");
+        }catch(Exception e){
+        }
+        arquivoMestre.close();
         double tempoFim = System.currentTimeMillis();
         return (tempoFim - tempoInicio)/1000;
     }
 
-    public static void pesquisaEImprimiCpfSimulacao(int[] vetKeys, int n, double tempoInsercao) throws Exception{
+    public static void pesquisaEImprimiCpfSimulacao(List<Integer> vetKeys, int n, double tempoInsercao) throws Exception{
         double tempoInicio = System.currentTimeMillis();
         RandomAccessFile arquivoMestre = new RandomAccessFile("arquivomestre.db", "rw");
         for(int i=0; i<n; i++){
-            int positionNoIndice = diretorio.getEnderecoCorrespondente(vetKeys[i]);
-            int positionNoArqMestre = indice.getEnderecoPorCPF(positionNoIndice, vetKeys[i]);
+            int positionNoIndice = diretorio.getEnderecoCorrespondente(vetKeys.get(i));
+            int positionNoArqMestre = indice.getEnderecoPorCPF(positionNoIndice, vetKeys.get(i));
             prontuario.imprimeRegistro(arquivoMestre, positionNoArqMestre);
         }
         arquivoMestre.close();
@@ -268,6 +284,10 @@ public class Main{
 
         //escreve o registro no fim do arquivo mestre (Prontuário)
         int endereco = prontuario.write(arquivoMestre, registro); //retorna endereco (posição) para inseri-lo no bucket com o cpf
+        insereHashing(endereco, registro);
+    }
+
+    public static void insereHashing(int endereco, Registro registro) throws Exception{
         int key = diretorio.getEnderecoCorrespondente(registro.getidRegistroCpf()); //retorna o endereço do índice aonde inserir o cpf
         int pLocalBucket = indice.addElemento(key, registro.getidRegistroCpf(), endereco); //tenta adcionar o cpf e endereço no índice de posição = key
 
@@ -286,7 +306,7 @@ public class Main{
                     int continuaCheio = indice.addElemento(key, element.getCPF(), element.getEndRegistro());
                     //caso todos os números continuaram a ir para o mesmo bucket, chama a função novamente para redividir o bucket e inserir os elementos
                     if(continuaCheio != -1){
-                    insere(registro);
+                    insereHashing(endereco, registro);
                     }
                 }
             }else{
@@ -300,7 +320,7 @@ public class Main{
                     int continuaCheio = indice.addElemento(key, element.getCPF(), element.getEndRegistro());
                     //caso todos os números continuaram a ir para o mesmo bucket, chama a função novamente para redividir o bucket e inserir os elementos
                     if(continuaCheio != -1){
-                        insere(registro);
+                        insereHashing(endereco, registro);
                     }
                 } 
             }
@@ -322,7 +342,7 @@ class Cabecalho{
             write();
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. construtor cabeçalho");
-            Main.menu();
+            tt.menu();
         }
     }
 
@@ -332,7 +352,7 @@ class Cabecalho{
             write();
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. updatecabeçalho");
-            Main.menu();
+            tt.menu();
         }
     }
 
@@ -362,7 +382,7 @@ class Cabecalho{
             arquivoMestre.writeInt(this.qtdRegistrosEscritos);
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. write cabeçalho");
-            Main.menu();
+            tt.menu();
         } finally{
             arquivoMestre.close();
         }
@@ -377,7 +397,7 @@ class Cabecalho{
             this.qtdRegistrosEscritos = arquivoMestre.readInt();
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. read cabeçalho");
-            Main.menu();
+            tt.menu();
         }finally{
             arquivoMestre.close();
         }
@@ -469,7 +489,7 @@ class Registro {
             fromByteArray(array);
         } catch (IOException error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. read registro");
-            Main.menu();
+            tt.menu();
         }
     }
 
@@ -519,7 +539,7 @@ class Prontuario{
             }
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado write registro");
-            Main.menu();
+            tt.menu();
         }
         //se nenhum resgitro estiver apagado, esreve o registro no final do arquivo e atualiza o cabeçalho
         this.cabecalho.updateCabecalho(this.cabecalho.getqtdRegistrosEscritos() + 1);
@@ -533,7 +553,7 @@ class Prontuario{
             registro.write(file);
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. write registro");
-            Main.menu();
+            tt.menu();
         }
         return position;
     }
@@ -546,7 +566,7 @@ class Prontuario{
             this.registro.read(file, this.cabecalho.getTAM_TC(),this.cabecalho.getTAM_OBSERVACAO());
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. readregistro");
-            Main.menu();
+            tt.menu();
         }
     }
 
@@ -564,7 +584,7 @@ class Prontuario{
             this.posicoesDosApagados.add(position);
         }catch(Exception e){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. apaga registro");
-            Main.menu();
+            tt.menu();
         }
     }
 
@@ -579,7 +599,7 @@ class Prontuario{
             }
         }catch(Exception e){
             System.out.println("Ocorreu um erro inesperado. Tente novamente.");
-            Main.menu();
+            tt.menu();
         }
     }
 
@@ -592,8 +612,16 @@ class Prontuario{
             }
         }catch(Exception e){
             System.out.println("Ocorreu um erro inesperado. Tente novamente.");
-            Main.menu();
+            tt.menu();
         }
+    }
+
+    public int getTAM_TC(){
+        return cabecalho.getTAM_TC();
+    }
+
+    public int getTAM_OBSERVACAO(){
+        return cabecalho.getTAM_OBSERVACAO();
     }
 }
 
@@ -606,7 +634,7 @@ class Bucket{
         this.pLocal = p;
         this.elemento = new ElementoBucket[nEntradas]; //nEntradas = quantidade de elementos por bucket
         for(int i=0; i<nEntradas; i++){
-          this.elemento[i] = new ElementoBucket(-1, -1); //seta cpf e endereçø como -1 por default
+          this.elemento[i] = new ElementoBucket(-1, -1); //coloca cpf e endereçø como -1 por default
         }
     }
 
@@ -637,7 +665,7 @@ class Bucket{
             }
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. write bucket");
-            Main.menu();
+            tt.menu();
         }
     }
 
@@ -666,7 +694,7 @@ class Bucket{
             }
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. apagaElemento bucket");
-            Main.menu();
+            tt.menu();
         }
         return -1; //caso não tenha encontrado o cpf
     }
@@ -682,7 +710,7 @@ class Bucket{
             }
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. comparaElemento bucket");
-            Main.menu();
+            tt.menu();
         }
         return -1; //caso não tenha encontrado o cpf
     }
@@ -702,7 +730,7 @@ class Bucket{
         }
         catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. copiaElementos bucket");
-            Main.menu();
+            tt.menu();
         }
     }
 
@@ -766,7 +794,7 @@ class ElementoBucket{
           file.writeInt(this.EndRegistro);
       }catch(Exception error){
         System.out.println("Ocorreu um erro inesperado. Tente novamente.");
-        Main.menu();
+        tt.menu();
       }
   }
 
@@ -778,7 +806,7 @@ class ElementoBucket{
             this.EndRegistro = file.readInt();
       }catch(Exception error){
         System.out.println("Ocorreu um erro inesperado. Tente novamente.");
-        Main.menu();
+        tt.menu();
       }
   }
 
@@ -823,7 +851,7 @@ class Indice{
             }
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. writeIndice");
-            Main.menu();
+            tt.menu();
         } finally{
             arquivoIndice.close();
         }
@@ -845,7 +873,7 @@ class Indice{
             this.nElementosPorBucket = file.readInt();
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. readCabecalho");
-            Main.menu();
+            tt.menu();
         }
     }
 
@@ -860,11 +888,11 @@ class Indice{
                 this.bucket.read(arquivoIndice);
                 this.bucket.intoString(this.nElementosPorBucket);
             }
-            System.out.println("*************");
+            System.out.println("***");
             
         }catch(Exception e){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. imprimeIndiceCompleto");
-            Main.menu();
+            tt.menu();
         } finally{
             arquivoIndice.close();
         }
@@ -879,7 +907,7 @@ class Indice{
             file.writeInt(this.nElementosPorBucket);
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. updateCabecalho");
-            Main.menu();
+            tt.menu();
         }
     }
 
@@ -900,7 +928,7 @@ class Indice{
             }
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. addElemento");
-            Main.menu();
+            tt.menu();
         } finally{
             arquivoIndice.close();
         }
@@ -925,7 +953,7 @@ class Indice{
             return elementos;
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Tente novamente. divideBucket");
-            Main.menu();
+            tt.menu();
         }
         finally{
             arquivoIndice.close();
@@ -947,7 +975,7 @@ class Indice{
             }
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. removeElementoBucket");
-            Main.menu();
+            tt.menu();
         } finally{
             arquivoIndice.close();
         }
@@ -965,7 +993,7 @@ class Indice{
             return end;
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. getEnderecoPorCPF");
-            Main.menu();
+            tt.menu();
         }
         return -1; //não achou o cpf
     }
@@ -979,7 +1007,7 @@ class Indice{
             arquivoIndice.close();                                         
         } catch (Exception error) {
             System.out.println("Ocorreu um erro inesperado. Tente novamente. writeBucket");
-            Main.menu();
+            tt.menu();
         } finally{
             arquivoIndice.close();
         }
@@ -1007,7 +1035,7 @@ class Diretorio{
         for(int element: elemento){ 
             diretorio += "\n[" + element + "]";
         }
-        diretorio += "\n*************";
+        diretorio += "\n***";
         return diretorio;
     }
 
@@ -1039,7 +1067,7 @@ class Diretorio{
             arquivoDiretorio.close();
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Por favor, tente novamente. write diretorio");
-            Main.menu();
+            tt.menu();
         } finally{
             arquivoDiretorio.close();
         }
@@ -1055,7 +1083,7 @@ class Diretorio{
             }
         }catch(Exception error){
             System.out.println("Ocorreu um erro inesperado. Por favor, tente novamente. read diretorio");
-            Main.menu();
+            tt.menu();
         } finally{
             arquivoDiretorio.close();
         }
@@ -1129,6 +1157,4 @@ class Diretorio{
         this.read();
         System.out.println(this.toString());
     }
-
-
 }
